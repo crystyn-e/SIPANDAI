@@ -1,53 +1,185 @@
 <x-app-layout>
-    <div class="mb-6">
-        <h2 class="font-bold text-2xl text-slate-800">Pemeriksaan: {{ $anak->nama }}</h2>
-        <p class="text-slate-500">Input hasil penimbangan bulan ini.</p>
-    </div>
+    <div class="max-w-3xl mx-auto space-y-6">
+        {{-- 1. BREADCRUMB & EXECUTIVE HEADER BANNER --}}
+        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-primary-950 to-primary-900 p-6 sm:p-8 text-white shadow-lg border border-primary-800/50">
+            <div class="pointer-events-none absolute -right-12 -top-12 h-52 w-52 rounded-full bg-emerald-400/15 blur-2xl"></div>
+            <div class="pointer-events-none absolute right-24 -bottom-16 h-44 w-44 rounded-full bg-amber-400/15 blur-2xl"></div>
 
-    <!-- BLOK UNTUK MENAMPILKAN PESAN ERROR VALIDASI -->
-    @if ($errors->any())
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
-            <ul class="list-disc pl-5">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
+            <div class="relative">
+                {{-- Breadcrumb Navigasi --}}
+                <nav class="flex items-center gap-2 text-xs font-medium text-slate-300 mb-4">
+                    <a href="{{ route('kader.anak.index') }}" class="hover:text-emerald-300 transition-colors inline-flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                        </svg>
+                        Data Anak Posyandu
+                    </a>
+                    <span class="text-slate-500">/</span>
+                    <span class="text-emerald-300 font-semibold">Input Pemeriksaan</span>
+                </nav>
+
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 backdrop-blur-xs text-emerald-300 font-extrabold text-lg flex items-center justify-center shrink-0 shadow-sm">
+                            {{ strtoupper(substr($anak->nama, 0, 2)) }}
+                        </div>
+                        <div>
+                            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-white/10 border border-white/15 text-[11px] font-semibold text-emerald-300 mb-1.5">
+                                <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                Antropometri & Pemantauan Gizi
+                            </div>
+                            <h2 class="font-extrabold text-2xl sm:text-[1.7rem] tracking-tight text-white">
+                                Pemeriksaan: {{ $anak->nama }}
+                            </h2>
+                            <p class="text-xs sm:text-sm text-slate-300 mt-1">
+                                Usia saat ini: <strong class="text-white font-semibold">{{ \Carbon\Carbon::parse($anak->tanggal_lahir)->diffForHumans(null, true) }}</strong>
+                                @if($anak->orangtua)
+                                    • Orang Tua: <strong class="text-white font-semibold">{{ $anak->orangtua->name }}</strong>
+                                @endif
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    @endif
 
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 max-w-2xl">
-        <form action="{{ route('kader.pemeriksaan.store', $anak->id) }}" method="POST">
-            @csrf
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-slate-700 mb-1">Tanggal Periksa</label>
-                <input type="date" name="tanggal_periksa" value="{{ date('Y-m-d') }}" required class="w-full rounded-lg border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Berat Badan (kg)</label>
-                    <input type="number" step="0.1" name="berat_badan" value="{{ old('berat_badan') }}" required placeholder="Cth: 9.5" class="w-full rounded-lg border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+        {{-- 2. ALERT VALIDASI ERROR --}}
+        @if ($errors->any())
+            <div class="bg-rose-50 border border-rose-200/90 text-rose-900 px-5 py-4 rounded-2xl shadow-2xs">
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-xl bg-rose-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-wider text-rose-700">Periksa Kembali Input Anda</p>
+                        <ul class="mt-1 text-sm list-disc list-inside space-y-0.5 text-rose-800">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
                 </div>
+            </div>
+        @endif
+
+        {{-- 3. FORM CARD UTAMA --}}
+        <div class="bg-white rounded-3xl shadow-xs border border-slate-200/90 overflow-hidden">
+            <div class="px-6 sm:px-8 py-5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Tinggi Badan (cm)</label>
-                    <input type="number" step="0.1" name="tinggi_badan" value="{{ old('tinggi_badan') }}" required placeholder="Cth: 75.2" class="w-full rounded-lg border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                    <h3 class="font-bold text-slate-900">Formulir Penimbangan & Pengukuran</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Masukkan hasil pengukuran fisik balita secara akurat untuk kalkulasi status gizi otomatis.</p>
                 </div>
+                <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    Kunjungan Posyandu
+                </span>
             </div>
 
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-slate-700 mb-1">Lingkar Kepala (cm) - Opsional</label>
-                <input type="number" step="0.1" name="lingkar_kepala" value="{{ old('lingkar_kepala') }}" placeholder="Cth: 45" class="w-full rounded-lg border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">
-            </div>
+            <form action="{{ route('kader.pemeriksaan.store', $anak->id) }}" method="POST" class="p-6 sm:p-8 space-y-6">
+                @csrf
 
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-slate-700 mb-1">Catatan Kader (Opsional)</label>
-                <textarea name="catatan" rows="3" class="w-full rounded-lg border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500">{{ old('catatan') }}</textarea>
-            </div>
+                {{-- Tanggal Periksa --}}
+                <div>
+                    <label for="tanggal_periksa" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+                        Tanggal Periksa <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="date"
+                           id="tanggal_periksa"
+                           name="tanggal_periksa"
+                           value="{{ old('tanggal_periksa', date('Y-m-d')) }}"
+                           required
+                           class="w-full px-4 py-3 rounded-xl bg-slate-50/70 border border-slate-200 text-slate-900 font-semibold text-sm focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all">
+                </div>
 
-            <div class="flex justify-end gap-3">
-                <a href="{{ route('kader.anak.index') }}" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2 px-4 rounded-lg transition-colors">Batal</a>
-                <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-lg shadow-sm transition-colors">Simpan Pemeriksaan</button>
-            </div>
-        </form>
+                {{-- Grid 2 Kolom: Berat Badan & Tinggi Badan --}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2 border-t border-slate-100">
+                    <div>
+                        <label for="berat_badan" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+                            Berat Badan <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input type="number"
+                                   step="0.1"
+                                   id="berat_badan"
+                                   name="berat_badan"
+                                   value="{{ old('berat_badan') }}"
+                                   required
+                                   placeholder="Cth: 9.5"
+                                   class="w-full pl-4 pr-14 py-3 rounded-xl bg-slate-50/70 border border-slate-200 text-slate-900 font-bold text-base tabular-nums focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all">
+                            <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-xs font-extrabold uppercase text-slate-400">
+                                kg
+                            </span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="tinggi_badan" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+                            Tinggi / Panjang Badan <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input type="number"
+                                   step="0.1"
+                                   id="tinggi_badan"
+                                   name="tinggi_badan"
+                                   value="{{ old('tinggi_badan') }}"
+                                   required
+                                   placeholder="Cth: 75.2"
+                                   class="w-full pl-4 pr-14 py-3 rounded-xl bg-slate-50/70 border border-slate-200 text-slate-900 font-bold text-base tabular-nums focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all">
+                            <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-xs font-extrabold uppercase text-slate-400">
+                                cm
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Lingkar Kepala --}}
+                <div>
+                    <label for="lingkar_kepala" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+                        Lingkar Kepala <span class="text-slate-400 font-normal normal-case">(Opsional)</span>
+                    </label>
+                    <div class="relative">
+                        <input type="number"
+                               step="0.1"
+                               id="lingkar_kepala"
+                               name="lingkar_kepala"
+                               value="{{ old('lingkar_kepala') }}"
+                               placeholder="Cth: 45"
+                               class="w-full pl-4 pr-14 py-3 rounded-xl bg-slate-50/70 border border-slate-200 text-slate-900 font-semibold text-sm tabular-nums focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all">
+                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-xs font-extrabold uppercase text-slate-400">
+                            cm
+                        </span>
+                    </div>
+                </div>
+
+                {{-- Catatan Kader --}}
+                <div>
+                    <label for="catatan" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+                        Catatan Kader <span class="text-slate-400 font-normal normal-case">(Opsional)</span>
+                    </label>
+                    <textarea id="catatan"
+                              name="catatan"
+                              rows="3"
+                              placeholder="Catatan kondisi fisik anak, pemberian PMT/vitamin A, atau keluhan orang tua..."
+                              class="w-full px-4 py-3 rounded-xl bg-slate-50/70 border border-slate-200 text-slate-900 font-medium text-sm focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all">{{ old('catatan') }}</textarea>
+                </div>
+
+                {{-- Footer Tombol Aksi --}}
+                <div class="pt-6 border-t border-slate-100 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3">
+                    <a href="{{ route('kader.anak.index') }}"
+                       class="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-all">
+                        Batal
+                    </a>
+                    <button type="submit"
+                            class="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary-700 via-primary-600 to-emerald-600 hover:from-primary-800 hover:to-emerald-700 text-white font-bold text-sm shadow-sm transition-all hover:-translate-y-0.5">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                        </svg>
+                        Simpan Pemeriksaan
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </x-app-layout>
