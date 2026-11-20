@@ -323,5 +323,141 @@
             </main>
         </div>
     </div>
+
+    {{-- ================= GLOBAL CUSTOM DELETE CONFIRMATION MODAL ================= --}}
+    <div x-data="{
+            open: false,
+            form: null,
+            title: 'Konfirmasi Penghapusan',
+            message: 'Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.'
+         }"
+         @open-delete-modal.window="
+            open = true;
+            form = $event.detail.form;
+            title = $event.detail.title || 'Konfirmasi Penghapusan';
+            message = $event.detail.message || 'Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.';
+         "
+         @keydown.escape.window="open = false"
+         x-show="open"
+         style="display: none;"
+         class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 print:hidden"
+         role="dialog"
+         aria-modal="true">
+
+        {{-- Backdrop Blur --}}
+        <div x-show="open"
+             x-transition:enter="ease-out duration-200"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="ease-in duration-150"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             @click="open = false"
+             class="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity"></div>
+
+        {{-- Kartu Modal --}}
+        <div x-show="open"
+             x-transition:enter="ease-out duration-200"
+             x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             x-transition:leave="ease-in duration-150"
+             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+             x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+             class="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden p-6 sm:p-7">
+
+            <div class="flex flex-col items-center text-center">
+                {{-- Ikon Peringatan Hapus --}}
+                <div class="w-14 h-14 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 mb-4 shadow-xs">
+                    <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                    </svg>
+                </div>
+
+                {{-- Judul & Pesan Dinamis --}}
+                <h3 class="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight" x-text="title"></h3>
+                <p class="text-xs sm:text-sm text-slate-500 mt-2 leading-relaxed" x-text="message"></p>
+            </div>
+
+            {{-- Tombol Aksi Pill --}}
+            <div class="grid grid-cols-2 gap-3 mt-6 pt-4 border-t border-slate-100">
+                <button type="button"
+                        @click="open = false"
+                        class="w-full py-3 px-4 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs uppercase tracking-wider transition-all">
+                    Batal
+                </button>
+
+                <button type="button"
+                        @click="if(form) form.submit(); open = false;"
+                        class="w-full py-3 px-4 rounded-full bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-700 hover:to-red-800 text-white font-extrabold text-xs uppercase tracking-wider shadow-md shadow-rose-600/25 transition-all hover:-translate-y-0.5">
+                    Ya, Hapus
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- ================= GLOBAL FLOATING TOAST NOTIFICATION ================= --}}
+    @if (session('success') || session('error'))
+        <div x-data="{ show: true }"
+             x-init="setTimeout(() => show = false, 4500)"
+             x-show="show"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-3 sm:translate-y-0 sm:translate-x-4"
+             x-transition:enter-end="opacity-100 translate-y-0 sm:translate-x-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed bottom-5 right-5 z-50 max-w-sm w-full bg-white rounded-2xl shadow-2xl border {{ session('success') ? 'border-emerald-200' : 'border-rose-200' }} p-4 flex items-start gap-3.5 print:hidden">
+            @if (session('success'))
+                <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                    </svg>
+                </div>
+                <div class="flex-1 pt-0.5">
+                    <p class="text-xs font-extrabold uppercase tracking-wider text-emerald-800">Berhasil</p>
+                    <p class="text-xs text-slate-600 mt-0.5 leading-relaxed">{{ session('success') }}</p>
+                </div>
+            @else
+                <div class="w-9 h-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+                    </svg>
+                </div>
+                <div class="flex-1 pt-0.5">
+                    <p class="text-xs font-extrabold uppercase tracking-wider text-rose-800">Terjadi Kesalahan</p>
+                    <p class="text-xs text-slate-600 mt-0.5 leading-relaxed">{{ session('error') }}</p>
+                </div>
+            @endif
+            <button @click="show = false" class="text-slate-400 hover:text-slate-600 p-1">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+    @endif
+
+    {{-- ================= OTOMATIS GANTI SEMUA confirm() BAWAAN BROWSER ================= --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Mengubah otomatis semua <form onsubmit="return confirm('...')"> menjadi custom modal SIPANDAI
+            document.querySelectorAll('form[onsubmit*="confirm("]').forEach((form) => {
+                const rawAttr = form.getAttribute('onsubmit') || '';
+                const match = rawAttr.match(/confirm\(['"](.+?)['"]\)/);
+                const customMsg = match ? match[1] : 'Apakah Anda yakin ingin menghapus data ini?';
+
+                form.removeAttribute('onsubmit');
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    window.dispatchEvent(new CustomEvent('open-delete-modal', {
+                        detail: {
+                            form: form,
+                            title: 'Konfirmasi Hapus Data',
+                            message: customMsg
+                        }
+                    }));
+                });
+            });
+        });
+    </script>
 </body>
 </html>
